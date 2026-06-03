@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microplastic Detection Project</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div id="printableReportArea">
+    <header>
+        <h1>🌍 Optical Microplastic Detection & Liquid Quality Analysis System</h1>
+        <p>College Minor Project - Sensor Simulation Dashboard</p>
+    </header>
+
+    <div class="container">
+
+        <div class="setup-box no-print">
+            <h2>1. Select Test Material / Liquid Type</h2>
+            <div class="form-group inline-group">
+                <label for="liquidSelect">Select Water Source:</label>
+                <select id="liquidSelect" onchange="resetCurrentLiquidSamples()">
+                    <option value="Tap Water">Tap Water</option>
+                    <option value="Bottled Mineral Water">Bottled Mineral Water</option>
+                    <option value="River Water">River Water</option>
+                    <option value="Lake Water">Lake Water</option>
+                    <option value="Ocean Water">Ocean Water</option>
+                    <option value="Industrial Wastewater">Industrial Wastewater</option>
+                    <option value="Sewage Water">Sewage Water</option>
+                    <option value="Groundwater">Groundwater / Well Water</option>
+                </select>
+                
+                <span style="margin: 0 10px; font-weight: bold;">OR Enter Custom Material Name:</span>
+                <input type="text" id="customLiquid" placeholder="E.g. Distilled Water" oninput="useCustomLiquid()">
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <div class="input-box no-print">
+                <h2>2. Enter Sensor Input Values (<span id="currentSampleNumber">Sample 1</span>)</h2>
+                <div id="sampleForm">
+                    <div class="form-group">
+                        <label for="scatterVal">1. Scatter Value (Light Intensity):</label>
+                        <input type="number" id="scatterVal" placeholder="Enter scatter reading (0 - 100)" min="0" max="100" step="any">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="transmissionVal">2. Transmission Value (Light Pass):</label>
+                        <input type="number" id="transmissionVal" placeholder="Enter transmission reading (0 - 100)" min="0" max="100" step="any">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="turbidityVal">3. Turbidity Value (Cloudiness):</label>
+                        <input type="number" id="turbidityVal" placeholder="Enter turbidity reading (0 - 100)" min="0" max="100" step="any">
+                    </div>
+
+                    <button type="button" id="addSampleBtn" onclick="addSampleData()">
+                        Analyze Sample Reading
+                    </button>
+                    <button type="button" class="reset-btn" onclick="resetCurrentLiquidSamples()">
+                        Clear Current Form
+                    </button>
+                </div>
+            </div>
+
+            <div class="metrics-box">
+                <h2>3. Current Material Test Summary</h2>
+                <div class="cards">
+                    <div class="card">
+                        <h3>Total Readings</h3>
+                        <p id="samplesCount">0</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>Average Raw Score</h3>
+                        <p id="avgScore">0.00</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>Overall Safety Status</h3>
+                        <p id="status">-</p>
+                    </div>
+                </div>
+
+                <div id="storeDataContainer" style="margin-top: 25px; text-align: center;" class="no-print">
+                    <button class="store-btn" onclick="storeFinalBatchResult()">
+                        💾 Save Material Entry to Logs
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-layout charts-section">
+            <div class="chart-container">
+                <h3>📈 Bar Chart: Individual Samples Comparison</h3>
+                <canvas id="scoreChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>📊 Pie Chart: Safe vs Danger Ratio</h3>
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <h2>📋 Current Testing Dataset Table Matrix</h2>
+            <div id="tableContainer">
+                <table id="currentLiquidTable">
+                    <thead>
+                        <tr>
+                            <th>Sample No.</th>
+                            <th>Liquid / Material Name</th>
+                            <th>Scatter</th>
+                            <th>Transmission</th>
+                            <th>Turbidity</th>
+                            <th>Calculated Raw Score</th>
+                            <th>Status Result</th>
+                            <th>Analysis Interpretation Note</th>
+                        </tr>
+                    </thead>
+                    <tbody id="currentTableBody">
+                        <tr>
+                            <td colspan="8" style="color: #888;">No readings added yet. Fill values in fields above to display data matrix records.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="threshold-reference-box">
+                <h3>💡 Microplastic Safety Threshold Reference Guide</h3>
+                <ul>
+                    <li><strong style="color: #198754;">🟢 Safe Zone (Raw Score &lt; 20):</strong> permissible limit for human consumption. Water has negligible microplastic index that human metabolism can naturally filter out without harm.</li>
+                    <li><strong style="color: #b57c00;">🟡 Moderate / Warning Zone (Raw Score 20 - 50):</strong> Elevated concentration. Particle scattering detected above safety levels. Standard micro-filtration or purification membranes are highly recommended before use.</li>
+                    <li><strong style="color: #dc3545;">🔴 Danger Zone (Raw Score &gt; 50):</strong> High contamination level. Toxic particle densities present that can cause cell leaching or organ blockages. Strictly unsafe for drinking purposes.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="table-wrapper stored-history no-print">
+            <h2>🗄️ Permanent Project Database Logs (Stored Results Archive)</h2>
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Timestamp Details</th>
+                        <th>Liquid / Material Name</th>
+                        <th>Total Readings Logged</th>
+                        <th>Average Raw Score</th>
+                        <th>Overall Final Verdict</th>
+                        <th>Action Operations Controls Panel</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr>
+                        <td colspan="7" style="color: #888;">No permanent database records committed yet. Fill metrics and save database tracking dataset.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
