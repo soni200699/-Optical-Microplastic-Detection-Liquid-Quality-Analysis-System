@@ -471,7 +471,7 @@ function generateDeviceReportPDF(targetId) {
     updateUserInterfaceLogs();
     setTimeout(() => {
         let originalTitle = document.title;
-        document.title = "Lab_Sensor_Report_" + matchedRecord.materialName.replace(/\s+/g, "_");
+        document.title = "Project_Sensor_Report_" + matchedRecord.materialName.replace(/\s+/g, "_");
         window.print(); document.title = originalTitle;
     }, 500);
 }
