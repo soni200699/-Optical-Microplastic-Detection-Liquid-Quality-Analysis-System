@@ -75,7 +75,7 @@
     <div class="container">
 
         <div class="setup-box no-print">
-            <h2>1. Select Water Sample Material Type</h2>
+            <h2>1. Select Water Sample Liquid Type</h2>
             <div class="form-group inline-group">
                 <label for="liquidSelect">Choose Water Source:</label>
                 <select id="liquidSelect" onchange="resetCurrentLiquidSamples()">
@@ -143,7 +143,7 @@
 
                 <div id="storeDataContainer" class="storage-action-wrapper no-print">
                     <button class="store-btn" onclick="storeFinalBatchResult()">
-                        💾 Save This Material Entry to Log Table
+                        💾 Save all results into permanent log table
                     </button>
                 </div>
             </div>
@@ -171,7 +171,7 @@
                     <thead>
                         <tr>
                             <th>Sample No.</th>
-                            <th>Water / Material Name</th>
+                            <th>Water / Liquid Name</th>
                             <th>Scatter Value</th>
                             <th>Transmission Value</th>
                             <th>Turbidity Value</th>
@@ -199,12 +199,12 @@
         </div>
 
         <div class="table-wrapper stored-history no-print">
-            <h2>🗄️ Permanent Project Database Logs (Stored Material Results)</h2>
+            <h2>🗄️ Permanent Project Database Logs (Stored Liquid Results)</h2>
             <table id="historyTable">
                 <thead>
                     <tr>
                         <th>Date & Time Details</th>
-                        <th>Material Name</th>
+                        <th>Liquid Name</th>
                         <th>Total Samples Checked</th>
                         <th>Average Raw Score</th>
                         <th>Overall Final Verdict</th>
@@ -213,7 +213,7 @@
                 </thead>
                 <tbody id="historyTableBody">
                     <tr>
-                        <td colspan="6" class="empty-state-table-cell">No permanent records saved yet. Save active materials entries to show history log vectors.</td>
+                        <td colspan="6" class="empty-state-table-cell">No permanent records saved yet. Save active liquids entries to show history log vectors.</td>
                     </tr>
                 </tbody>
             </table>
