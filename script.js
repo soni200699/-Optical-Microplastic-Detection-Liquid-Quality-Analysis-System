@@ -93,7 +93,7 @@ function handleUserLoginAuthentication() {
             document.getElementById("displayUserSessionName").innerText = matchedUserRecord.name;
             document.getElementById("avatarLetterIcon").innerText = matchedUserRecord.name.charAt(0).toUpperCase();
             
-            alert("Login Successful! Welcome to Project System Dashboard.");
+            alert("Login Successful! Welcome to Project Dashboard.");
         } else {
             alert("Error: Incorrect password. Please try again.");
             generateMathCaptcha();
@@ -342,6 +342,7 @@ function destroyChartInstances() {
     if(pieChartInstance) { pieChartInstance.destroy(); pieChartInstance = null; }
 }
 
+/* Graphic Engine Modules Configuration Render */
 function renderAnalyticalCharts(safeTicks, moderateTicks, dangerTicks) {
     let barCanvas = document.getElementById("scoreChart");
     let pieCanvas = document.getElementById("pieChart");
