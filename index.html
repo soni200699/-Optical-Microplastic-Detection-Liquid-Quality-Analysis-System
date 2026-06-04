@@ -3,70 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Microplastic Detection Project</title>
+    <title>Microplastic Detection Project Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<div id="printableReportArea">
-    <header>
-        <h1>🌍 Optical Microplastic Detection & Liquid Quality Analysis System</h1>
-        <p>College Minor Project - Sensor Simulation Dashboard</p>
+<div id="loginPage" class="login-overlay">
+    <div class="login-box">
+        <h2>🔐 Login</h2>
+        <p>If you are a new user, enter your username, email and password to automatically register and Create/Login your account.</p>
+        
+        <div class="form-group">
+            <label>User Full Name:</label>
+            <input type="text" id="registerName" placeholder="Enter full name">
+        </div>
+
+        <div class="form-group">
+            <label>Email Address:</label>
+            <input type="text" id="loginUser" placeholder="Enter email address">
+        </div>
+        
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="password" id="loginPass" placeholder="Enter password">
+        </div>
+        
+        <div class="captcha-container">
+            <label>Math Captcha Code:</label>
+            <div class="captcha-row">
+                <span id="captchaQuestion"></span>
+                <button type="button" class="refresh-captcha-btn" onclick="generateMathCaptcha()">🔄</button>
+            </div>
+            <input type="number" id="captchaInput" placeholder="Solve this sum">
+        </div>
+        
+        <button type="button" class="login-submit-btn" onclick="handleUserLoginAuthentication()">Login / Register</button>
+    </div>
+</div>
+
+<div id="printableReportArea" style="display: none;">
+    <header class="dashboard-global-header">
+        <div class="header-main-content">
+            <h1>🌍 Optical Microplastic Detection & Water Quality Analysis System</h1>
+            <p>College Minor Project Dashboard - Computer Science Engineering Department</p>
+        </div>
+        
+        <div class="user-profile-navigation no-print">
+            <div class="profile-dropdown-wrapper">
+                <div class="circular-avatar-trigger" onclick="toggleUserProfileDropdownMenu()">
+                    <span id="avatarLetterIcon">U</span>
+                </div>
+                <div id="profileDropdownMenu" class="dropdown-content-panel">
+                    <div class="dropdown-user-identity-badge">
+                        <div id="displayUserSessionName" style="font-weight: 700; color: #212529; font-size: 0.95rem;">Operator Name</div>
+                        <div id="displayUserSessionEmail" style="word-break: break-all; font-weight: 500; color: #0d6efd; font-size: 0.85rem; margin-top: 2px;">user@example.com</div>
+                        <div style="font-size: 0.75rem; color: #6c757d; margin-top: 5px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; display: inline-block;">Lab System Operator</div>
+                    </div>
+                    <hr style="border: 0; border-top: 1px solid #f1f3f5; margin: 0;">
+                    <a href="javascript:void(0)" onclick="triggerSystemModalDialog('profile')">My Profile Account</a>
+                    <a href="javascript:void(0)" onclick="triggerSystemModalDialog('about')">About This Project</a>
+                    <a href="javascript:void(0)" onclick="triggerSystemModalDialog('terms')">Terms & Conditions</a>
+                    <a href="javascript:void(0)" onclick="triggerSystemModalDialog('help')">Help & Support</a>
+                    <hr style="border: 0; border-top: 1px solid #f1f3f5; margin: 0;">
+                    <a href="javascript:void(0)" class="dropdown-logout-action-link" onclick="handleUserLogoutSession()">Logout</a>
+                </div>
+            </div>
+        </div>
     </header>
 
     <div class="container">
 
         <div class="setup-box no-print">
-            <h2>1. Select Test Material / Liquid Type</h2>
+            <h2>1. Select Water Sample Material Type</h2>
             <div class="form-group inline-group">
-                <label for="liquidSelect">Select Water Source:</label>
+                <label for="liquidSelect">Choose Water Source:</label>
                 <select id="liquidSelect" onchange="resetCurrentLiquidSamples()">
-                    <option value="Tap Water">Tap Water</option>
-                    <option value="Bottled Mineral Water">Bottled Mineral Water</option>
-                    <option value="River Water">River Water</option>
-                    <option value="Lake Water">Lake Water</option>
-                    <option value="Ocean Water">Ocean Water</option>
-                    <option value="Industrial Wastewater">Industrial Wastewater</option>
-                    <option value="Sewage Water">Sewage Water</option>
+                    <option value="Tap Water">Tap Water (Ghar ka Paani)</option>
+                    <option value="Bottled Mineral Water">Bottled Mineral Water (Packaged Water)</option>
+                    <option value="River Water">River Water (Nadi ka Paani)</option>
+                    <option value="Lake Water">Lake Water (Talaab ka Paani)</option>
+                    <option value="Ocean Water">Ocean Water (Samundar ka Paani)</option>
+                    <option value="Industrial Wastewater">Industrial Wastewater (Factory Waste Water)</option>
+                    <option value="Sewage Water">Sewage Water (Naale ka Ganda Paani)</option>
                     <option value="Groundwater">Groundwater / Well Water</option>
                 </select>
                 
-                <span style="margin: 0 10px; font-weight: bold;">OR Enter Custom Material Name:</span>
-                <input type="text" id="customLiquid" placeholder="E.g. Distilled Water" oninput="useCustomLiquid()">
+                <span class="custom-input-divider-text">OR Type Custom Name:</span>
+                <input type="text" id="customLiquid" placeholder="Enter water source" oninput="useCustomLiquid()">
             </div>
         </div>
 
         <div class="grid-layout">
             <div class="input-box no-print">
-                <h2>2. Enter Sensor Input Values (<span id="currentSampleNumber">Sample 1</span>)</h2>
+                <h2>2. Enter Arduino Sensor Readings (<span id="currentSampleNumber">Sample 1</span>)</h2>
                 <div id="sampleForm">
                     <div class="form-group">
-                        <label for="scatterVal">1. Scatter Value (Light Intensity):</label>
-                        <input type="number" id="scatterVal" placeholder="Enter scatter reading (0 - 100)" min="0" max="100" step="any">
+                        <label for="scatterVal">1. Scatter Value (Light Intensity scattered by plastic particles):</label>
+                        <input type="number" id="scatterVal" placeholder="Enter value from 0 to 100" min="0" max="100" step="any">
                     </div>
 
                     <div class="form-group">
-                        <label for="transmissionVal">2. Transmission Value (Light Pass):</label>
-                        <input type="number" id="transmissionVal" placeholder="Enter transmission reading (0 - 100)" min="0" max="100" step="any">
+                        <label for="transmissionVal">2. Transmission Value (Light passed straight through glass):</label>
+                        <input type="number" id="transmissionVal" placeholder="Enter value from 0 to 100" min="0" max="100" step="any">
                     </div>
 
                     <div class="form-group">
-                        <label for="turbidityVal">3. Turbidity Value (Cloudiness):</label>
-                        <input type="number" id="turbidityVal" placeholder="Enter turbidity reading (0 - 100)" min="0" max="100" step="any">
+                        <label for="turbidityVal">3. Turbidity Value (Gudhla-pan / Water Cloudiness index):</label>
+                        <input type="number" id="turbidityVal" placeholder="Enter value from 0 to 100" min="0" max="100" step="any">
                     </div>
 
-                    <button type="button" id="addSampleBtn" onclick="addSampleData()">
-                        Analyze Sample Reading
+                    <button type="button" id="addSampleBtn" class="primary-action-trigger-btn" onclick="addSampleData()">
+                        Add Sample Data
                     </button>
                     <button type="button" class="reset-btn" onclick="resetCurrentLiquidSamples()">
-                        Clear Current Form
+                        Clear Current Input Form
                     </button>
                 </div>
             </div>
 
             <div class="metrics-box">
-                <h2>3. Current Material Test Summary</h2>
+                <h2>3. Current Water Sample Summary Card</h2>
                 <div class="cards">
                     <div class="card">
                         <h3>Total Readings</h3>
@@ -79,14 +136,14 @@
                     </div>
 
                     <div class="card">
-                        <h3>Overall Safety Status</h3>
+                        <h3>Final Status</h3>
                         <p id="status">-</p>
                     </div>
                 </div>
 
-                <div id="storeDataContainer" style="margin-top: 25px; text-align: center;" class="no-print">
+                <div id="storeDataContainer" class="storage-action-wrapper no-print">
                     <button class="store-btn" onclick="storeFinalBatchResult()">
-                        💾 Save Material Entry to Logs
+                        💾 Save This Material Entry to Log Table
                     </button>
                 </div>
             </div>
@@ -94,70 +151,82 @@
 
         <div class="grid-layout charts-section">
             <div class="chart-container">
-                <h3>📈 Bar Chart: Individual Samples Comparison</h3>
-                <canvas id="scoreChart"></canvas>
+                <h3>📈 Individual Sensor Sample Comparison (Bar Chart)</h3>
+                <div class="canvas-chart-wrapper-box">
+                    <canvas id="scoreChart"></canvas>
+                </div>
             </div>
             <div class="chart-container">
-                <h3>📊 Pie Chart: Safe vs Danger Ratio</h3>
-                <canvas id="pieChart"></canvas>
+                <h3>📊 Safe vs Danger Ratio Distribution (Pie Chart)</h3>
+                <div class="canvas-chart-wrapper-box">
+                    <canvas id="pieChart"></canvas>
+                </div>
             </div>
         </div>
 
         <div class="table-wrapper">
-            <h2>📋 Current Testing Dataset Table Matrix</h2>
+            <h2>📋 Current Active Water Sample Records Datatable</h2>
             <div id="tableContainer">
                 <table id="currentLiquidTable">
                     <thead>
                         <tr>
                             <th>Sample No.</th>
-                            <th>Liquid / Material Name</th>
-                            <th>Scatter</th>
-                            <th>Transmission</th>
-                            <th>Turbidity</th>
+                            <th>Water / Material Name</th>
+                            <th>Scatter Value</th>
+                            <th>Transmission Value</th>
+                            <th>Turbidity Value</th>
                             <th>Calculated Raw Score</th>
                             <th>Status Result</th>
-                            <th>Analysis Interpretation Note</th>
+                            <th>Analysis Details & Tips</th>
                         </tr>
                     </thead>
                     <tbody id="currentTableBody">
                         <tr>
-                            <td colspan="8" style="color: #888;">No readings added yet. Fill values in fields above to display data matrix records.</td>
+                            <td colspan="8" class="empty-state-table-cell">No data recorded yet. Please add readings from the form above.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="threshold-reference-box">
-                <h3>💡 Microplastic Safety Threshold Reference Guide</h3>
+                <h3>💡 Microplastic Safety Limits Reference Guide</h3>
                 <ul>
-                    <li><strong style="color: #198754;">🟢 Safe Zone (Raw Score &lt; 20):</strong> permissible limit for human consumption. Water has negligible microplastic index that human metabolism can naturally filter out without harm.</li>
-                    <li><strong style="color: #b57c00;">🟡 Moderate / Warning Zone (Raw Score 20 - 50):</strong> Elevated concentration. Particle scattering detected above safety levels. Standard micro-filtration or purification membranes are highly recommended before use.</li>
-                    <li><strong style="color: #dc3545;">🔴 Danger Zone (Raw Score &gt; 50):</strong> High contamination level. Toxic particle densities present that can cause cell leaching or organ blockages. Strictly unsafe for drinking purposes.</li>
+                    <li><strong class="legend-safe-bold-text">🟢 Safe Zone (Raw Score &lt; 20):</strong> Normal and safe limit for human body. Water has negligible microplastics that human digestion system can naturally filter out without harm.</li>
+                    <li><strong class="legend-warn-bold-text">🟡 Moderate Warning Zone (Raw Score 20 - 50):</strong> High concentration detected. Light scattering is high. Pre-filtration and boiling are recommended before using this water.</li>
+                    <li><strong class="legend-danger-bold-text">🔴 Critical Danger Zone (Raw Score &gt; 50):</strong> Severe plastic contamination! Light is blocked too much by toxic synthetic plastic elements. Strictly unsafe for drinking.</li>
                 </ul>
             </div>
         </div>
 
         <div class="table-wrapper stored-history no-print">
-            <h2>🗄️ Permanent Project Database Logs (Stored Results Archive)</h2>
+            <h2>🗄️ Permanent Project Database Logs (Stored Material Results)</h2>
             <table id="historyTable">
                 <thead>
                     <tr>
-                        <th>Timestamp Details</th>
-                        <th>Liquid / Material Name</th>
-                        <th>Total Readings Logged</th>
+                        <th>Date & Time Details</th>
+                        <th>Material Name</th>
+                        <th>Total Samples Checked</th>
                         <th>Average Raw Score</th>
                         <th>Overall Final Verdict</th>
-                        <th>Action Operations Controls Panel</th>
+                        <th>Actions panel</th>
                     </tr>
                 </thead>
                 <tbody id="historyTableBody">
                     <tr>
-                        <td colspan="7" style="color: #888;">No permanent database records committed yet. Fill metrics and save database tracking dataset.</td>
+                        <td colspan="6" class="empty-state-table-cell">No permanent records saved yet. Save active materials entries to show history log vectors.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
+    </div>
+</div>
+
+<div id="infoDialogModal" class="system-modal-overlay">
+    <div class="modal-card-box">
+        <h2 id="modalBoxTitle">Project Information Dialog</h2>
+        <div id="modalBoxContent" class="modal-text-content"></div>
+        <button type="button" class="modal-close-btn" onclick="closeSystemModalDialog()">Close Window</button>
     </div>
 </div>
 
