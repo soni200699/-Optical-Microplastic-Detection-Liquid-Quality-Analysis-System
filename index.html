@@ -11,8 +11,8 @@
 
 <div id="loginPage" class="login-overlay">
     <div class="login-box">
-        <h2>🔐 Login</h2>
-        <p>If you are a new user, enter your username, email and password to automatically register and Create/Login your account.</p>
+        <h2>🔐 Project Login Window</h2>
+        <p>If you are a new user, enter your email and password to automatically register and create your account.</p>
         
         <div class="form-group">
             <label>User Full Name:</label>
@@ -58,7 +58,6 @@
                     <div class="dropdown-user-identity-badge">
                         <div id="displayUserSessionName" style="font-weight: 700; color: #212529; font-size: 0.95rem;">Operator Name</div>
                         <div id="displayUserSessionEmail" style="word-break: break-all; font-weight: 500; color: #0d6efd; font-size: 0.85rem; margin-top: 2px;">user@example.com</div>
-                        <div style="font-size: 0.75rem; color: #6c757d; margin-top: 5px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; display: inline-block;">Lab System Operator</div>
                     </div>
                     <hr style="border: 0; border-top: 1px solid #f1f3f5; margin: 0;">
                     <a href="javascript:void(0)" onclick="triggerSystemModalDialog('profile')">My Profile Account</a>
@@ -75,7 +74,7 @@
     <div class="container">
 
         <div class="setup-box no-print">
-            <h2>1. Select Water Sample Liquid Type</h2>
+            <h2>1. Select Water Sample Material Type</h2>
             <div class="form-group inline-group">
                 <label for="liquidSelect">Choose Water Source:</label>
                 <select id="liquidSelect" onchange="resetCurrentLiquidSamples()">
@@ -90,7 +89,7 @@
                 </select>
                 
                 <span class="custom-input-divider-text">OR Type Custom Name:</span>
-                <input type="text" id="customLiquid" placeholder="Enter Liquid Name" oninput="useCustomLiquid()">
+                <input type="text" id="customLiquid" placeholder="Enter water source" oninput="useCustomLiquid()">
             </div>
         </div>
 
