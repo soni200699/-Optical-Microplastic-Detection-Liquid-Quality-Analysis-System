@@ -147,24 +147,24 @@ function triggerSystemModalDialog(contentType) {
             }
         }
 
-        titleEl.innerText = " My Profile Account Info";
+        titleEl.innerText = "Project Information Dialog";
         contentEl.innerHTML = `<strong>Operator Name:</strong> ${activeName}<br>
                                <strong>Registered Email:</strong> ${activeEmail}<br><br>
                                <label style="display:inline-block; font-weight:600;">Contact Number (Optional):</label><br>
                                <input type="text" id="modalPhoneInput" value="${currentPhone}" placeholder="Enter your contact number" style="width:70%; padding:8px; border:1px solid #ccc; border-radius:4px;">
                                <button type="button" onclick="saveContactNumberOnly()" style="padding:8px 12px; font-size:0.85rem; margin-top:0;">Save Number</button>`;
     } else if (contentType === 'about') {
-        titleEl.innerText = "ℹ️ About Our Minor Project";
+        titleEl.innerText = "ℹ️ About Our Minor Project Model";
         contentEl.innerHTML = `This project dashboard is designed to simulate a real hardware optical microplastic tracking device.<br><br>
                                When laser light passes through water samples, it gets scattered by plastic waste particles. 
                                The photodiode measures this distortion and calculates a score index to analyze the purity level of different water materials.`;
     } else if (contentType === 'terms') {
-        titleEl.innerText = "⚖️ Terms & Conditions";
+        titleEl.innerText = "⚖️ Project Terms & Conditions";
         contentEl.innerHTML = `* This application runs fully on client-side sandboxed local processing loops.<br>
                                * All sample arrays data entries stay completely inside your device browser local cache storage.<br>
                                * Users should check calibration and analog sensor hardware configurations before creating final reports rows.`;
     } else if (contentType === 'help') {
-        titleEl.innerText = "❓ Help & Support Desk";
+        titleEl.innerText = "❓ Project Troubleshooting Help Desk";
         contentEl.innerHTML = `<strong>Quick Help Guide:</strong><br>
                                * <strong>Charts not loading?</strong> Add sensor values entries inside the input box form first.<br>
                                * <strong>PDF printing cutting borders?</strong> Change your browser print layout target profile destination to 'Save as PDF'.<br>
