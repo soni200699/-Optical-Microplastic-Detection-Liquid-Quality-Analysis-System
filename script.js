@@ -342,7 +342,6 @@ function destroyChartInstances() {
     if(pieChartInstance) { pieChartInstance.destroy(); pieChartInstance = null; }
 }
 
-/* Graphic Engine Modules Configuration Render */
 function renderAnalyticalCharts(safeTicks, moderateTicks, dangerTicks) {
     let barCanvas = document.getElementById("scoreChart");
     let pieCanvas = document.getElementById("pieChart");
@@ -479,15 +478,30 @@ function generateDeviceReportPDF(targetId) {
 
 function shareMaterialDataset(targetId) {
     let matchedRecord = storedDatabase.find(r => r.uniqueId === targetId);
-    if(!matchedRecord) { alert("Record extraction error."); return; }
-    let shareText = `🔬 *Microplastic System Analysis Record Snapshot* 🔬\n\n🔹 *Medium Allocation:* ${matchedRecord.materialName}\n🔹 *Evaluated Data Points:* ${matchedRecord.samplesSize} Sequences\n🔹 *Mean Calibration Metric:* ${matchedRecord.avgScoreValue} Raw Units\n🔹 *Safety Verdict Outcome:* ${matchedRecord.finalStatusVerdict.toUpperCase()}\n\n📊 _Simulated via Core Photodiode Refraction Laboratory Application Node Module._`;
+    if(!matchedRecord) { alert("Error: Record extraction failed."); return; }
+    
+    let shareText = `🔬 Microplastic Analysis Project Report 🔬\n\n` +
+                    `🔷 Material Source: ${matchedRecord.materialName}\n` +
+                    `🔷 Total Samples Logged: ${matchedRecord.samplesSize}\n` +
+                    `🔷 Average Raw Score Index: ${matchedRecord.avgScoreValue}\n` +
+                    `🔷 Final Health Safety Verdict: ${matchedRecord.finalStatusVerdict.toUpperCase()}\n\n` +
+                    `📊 Generated via Optical Microplastic Detection Simulation System Dashboard.`;
 
     if (navigator.share) {
-        navigator.share({ title: 'Optical Microplastic Laboratory Analytics Node', text: shareText, url: window.location.href })
-        .then(() => alert("Broadcast complete. Stream synchronized across system drawers."))
-        .catch(() => { navigator.clipboard.writeText(shareText); alert("System Drawer Cancelled: Report compiled to system clipboard."); });
+        navigator.share({
+            title: 'Microplastic Detection Project Report',
+            text: shareText,
+            url: window.location.href
+        })
+        .then(() => alert("Shared successfully via native share drawer!"))
+        .catch(() => {
+            navigator.clipboard.writeText(shareText);
+            alert("Share panel closed. Report summary copied to clipboard as backup!");
+        });
     } else {
-        navigator.clipboard.writeText(shareText).then(() => { alert("Clipboard Sync: Native sharing context layout unsupported on this runtime container. Raw metrics string exported to system copy layers."); });
+        navigator.clipboard.writeText(shareText).then(() => {
+            alert("Native system sharing is not supported on this browser context. Summary text automatically copied to your clipboard logs instead!");
+        });
     }
 }
 
