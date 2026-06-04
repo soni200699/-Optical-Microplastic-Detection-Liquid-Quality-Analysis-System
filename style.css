@@ -550,6 +550,20 @@ tr:nth-child(even) {
     color: #334155;
 }
 
+.modal-text-content input[type="text"] {
+    width: 80%;
+    display: inline-block;
+    padding: 8px;
+    margin-top: 5px;
+    font-size: 0.9rem;
+}
+
+.modal-text-content button {
+    padding: 8px 15px;
+    font-size: 0.85rem;
+    margin-left: 5px;
+}
+
 .modal-close-btn {
     background-color: #475569;
     margin: 0;
