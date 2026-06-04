@@ -14,9 +14,7 @@ window.onload = function() {
         document.getElementById("printableReportArea").style.display = "block";
         document.getElementById("displayUserSessionEmail").innerText = sessionEmail;
         document.getElementById("displayUserSessionName").innerText = sessionName;
-        
-        let initialLetter = sessionName.charAt(0).toUpperCase();
-        document.getElementById("avatarLetterIcon").innerText = initialLetter;
+        document.getElementById("avatarLetterIcon").innerText = sessionName.charAt(0).toUpperCase();
     } else {
         generateMathCaptcha();
     }
@@ -70,11 +68,7 @@ function handleUserLoginAuthentication() {
     }
 
     if (matchedUserRecord === null) {
-        let newProfileRecord = {
-            name: nameVal,
-            email: userVal,
-            password: passVal
-        };
+        let newProfileRecord = { name: nameVal, email: userVal, password: passVal, phone: "" };
         simulatedUserDatabase.push(newProfileRecord);
         localStorage.setItem(usersRegistryKey, JSON.stringify(simulatedUserDatabase));
         
@@ -85,9 +79,7 @@ function handleUserLoginAuthentication() {
         document.getElementById("printableReportArea").style.display = "block";
         document.getElementById("displayUserSessionEmail").innerText = userVal;
         document.getElementById("displayUserSessionName").innerText = nameVal;
-        
-        let initialLetter = nameVal.charAt(0).toUpperCase();
-        document.getElementById("avatarLetterIcon").innerText = initialLetter;
+        document.getElementById("avatarLetterIcon").innerText = nameVal.charAt(0).toUpperCase();
         
         alert("Account Created! Registration successful in local memory container.");
     } else {
@@ -99,9 +91,7 @@ function handleUserLoginAuthentication() {
             document.getElementById("printableReportArea").style.display = "block";
             document.getElementById("displayUserSessionEmail").innerText = userVal;
             document.getElementById("displayUserSessionName").innerText = matchedUserRecord.name;
-            
-            let initialLetter = matchedUserRecord.name.charAt(0).toUpperCase();
-            document.getElementById("avatarLetterIcon").innerText = initialLetter;
+            document.getElementById("avatarLetterIcon").innerText = matchedUserRecord.name.charAt(0).toUpperCase();
             
             alert("Login Successful! Welcome to Project System Dashboard.");
         } else {
@@ -141,41 +131,62 @@ window.onclick = function(event) {
 function triggerSystemModalDialog(contentType) {
     let titleEl = document.getElementById("modalBoxTitle");
     let contentEl = document.getElementById("modalBoxContent");
-    
-    let menuPanel = document.getElementById("profileDropdownMenu");
-    if(menuPanel) {
-        menuPanel.classList.remove("show-dropdown");
-    }
+    document.getElementById("profileDropdownMenu").classList.remove("show-dropdown");
 
-    let activeSessionEmail = localStorage.getItem("microplastic_user_session") || "user@example.com";
-    let activeSessionName = localStorage.getItem("microplastic_user_name") || "Operator Name";
+    let activeEmail = localStorage.getItem("microplastic_user_session") || "user@example.com";
+    let activeName = localStorage.getItem("microplastic_user_name") || "Operator Name";
 
     if (contentType === 'profile') {
-        titleEl.innerText = "👤 My Lab Profile Account Info";
-        contentEl.innerHTML = `<strong>Operator Name:</strong> ${activeSessionName}<br>
-                               <strong>Registered Email:</strong> ${activeSessionEmail}<br>
-                               <strong>Contact Number:</strong> +91 98765-43210 (Simulation)<br>
-                               <strong>Lab Location Node:</strong> College Laboratory Campus Center<br>
-                               <strong>System Access Level:</strong> Project System Admin / Tier 1 Controller`;
+        let usersRegistryKey = "microplastic_registered_users";
+        let db = JSON.parse(localStorage.getItem(usersRegistryKey) || "[]");
+        let currentPhone = "";
+        for(let i=0; i<db.length; i++) {
+            if(db[i].email === activeEmail) {
+                currentPhone = db[i].phone || "";
+                break;
+            }
+        }
+
+        titleEl.innerText = " My Profile Account Info";
+        contentEl.innerHTML = `<strong>Operator Name:</strong> ${activeName}<br>
+                               <strong>Registered Email:</strong> ${activeEmail}<br><br>
+                               <label style="display:inline-block; font-weight:600;">Contact Number (Optional):</label><br>
+                               <input type="text" id="modalPhoneInput" value="${currentPhone}" placeholder="Enter your contact number" style="width:70%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                               <button type="button" onclick="saveContactNumberOnly()" style="padding:8px 12px; font-size:0.85rem; margin-top:0;">Save Number</button>`;
     } else if (contentType === 'about') {
-        titleEl.innerText = "ℹ️ About Our Minor Project Model";
+        titleEl.innerText = "ℹ️ About Our Minor Project";
         contentEl.innerHTML = `This project dashboard is designed to simulate a real hardware optical microplastic tracking device.<br><br>
                                When laser light passes through water samples, it gets scattered by plastic waste particles. 
                                The photodiode measures this distortion and calculates a score index to analyze the purity level of different water materials.`;
     } else if (contentType === 'terms') {
-        titleEl.innerText = "⚖️ Project Terms & Conditions";
+        titleEl.innerText = "⚖️ Terms & Conditions";
         contentEl.innerHTML = `* This application runs fully on client-side sandboxed local processing loops.<br>
                                * All sample arrays data entries stay completely inside your device browser local cache storage.<br>
                                * Users should check calibration and analog sensor hardware configurations before creating final reports rows.`;
     } else if (contentType === 'help') {
-        titleEl.innerText = "❓ Project Troubleshooting Help Desk";
+        titleEl.innerText = "❓ Help & Support Desk";
         contentEl.innerHTML = `<strong>Quick Help Guide:</strong><br>
                                * <strong>Charts not loading?</strong> Add sensor values entries inside the input box form first.<br>
                                * <strong>PDF printing cutting borders?</strong> Change your browser print layout target profile destination to 'Save as PDF'.<br>
                                * For hardware pin-outs, please refer to standard Arduino Uno breadboard wire charts.`;
     }
-
     document.getElementById("infoDialogModal").style.display = "flex";
+}
+
+function saveContactNumberOnly() {
+    let activeEmail = localStorage.getItem("microplastic_user_session");
+    let newPhone = document.getElementById("modalPhoneInput").value.trim();
+    let usersRegistryKey = "microplastic_registered_users";
+    let db = JSON.parse(localStorage.getItem(usersRegistryKey) || "[]");
+    
+    for(let i=0; i<db.length; i++) {
+        if(db[i].email === activeEmail) {
+            db[i].phone = newPhone;
+            break;
+        }
+    }
+    localStorage.setItem(usersRegistryKey, JSON.stringify(db));
+    alert("Contact number updated successfully inside profile records!");
 }
 
 function closeSystemModalDialog() {
@@ -195,9 +206,7 @@ function useCustomLiquid() {
 
 function getActiveLiquidName() {
     let customVal = document.getElementById("customLiquid").value.trim();
-    if (customVal !== "") {
-        return customVal;
-    }
+    if (customVal !== "") { return customVal; }
     let selectEl = document.getElementById("liquidSelect");
     if(selectEl && selectEl.selectedIndex !== -1) {
         return selectEl.options[selectEl.selectedIndex].value;
@@ -208,18 +217,15 @@ function getActiveLiquidName() {
 function resetCurrentLiquidSamples() {
     currentSamples = [];
     activeEditingRecordId = null;
-    
     document.getElementById("scatterVal").value = "";
     document.getElementById("transmissionVal").value = "";
     document.getElementById("turbidityVal").value = "";
-    
     let actionBtn = document.getElementById("addSampleBtn");
     if(actionBtn) {
         actionBtn.disabled = false;
         actionBtn.style.opacity = "1";
         actionBtn.innerText = "Add Sample Data";
     }
-    
     updateUserInterfaceLogs();
 }
 
@@ -243,7 +249,6 @@ function addSampleData() {
     }
 
     let calculatedScore = (scatter * 0.6) + (transmission * 0.3) + (turbidity * 0.1);
-
     let statusClassification = "";
     let interpretationTip = "";
 
@@ -258,7 +263,7 @@ function addSampleData() {
         interpretationTip = "Critical danger (> 50 Index). Toxic particle concentration; unsafe for direct consumer consumption.";
     }
 
-    let sampleRecord = {
+    currentSamples.push({
         sampleIndex: currentSamples.length + 1,
         liquidName: getActiveLiquidName(),
         scatterValue: scatter,
@@ -267,196 +272,107 @@ function addSampleData() {
         finalScore: calculatedScore,
         status: statusClassification,
         tip: interpretationTip
-    };
-
-    currentSamples.push(sampleRecord);
+    });
 
     document.getElementById("scatterVal").value = "";
     document.getElementById("transmissionVal").value = "";
     document.getElementById("turbidityVal").value = "";
-
     updateUserInterfaceLogs();
 }
 
 function updateUserInterfaceLogs() {
     let tableBody = document.getElementById("currentTableBody");
     let sampleCounterLabel = document.getElementById("currentSampleNumber");
-    
-    if(sampleCounterLabel) {
-        sampleCounterLabel.innerText = "Sample " + (currentSamples.length + 1);
-    }
+    if(sampleCounterLabel) { sampleCounterLabel.innerText = "Sample " + (currentSamples.length + 1); }
 
     if(currentSamples.length === 0) {
         if(tableBody) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="8" class="empty-state-table-cell">No data recorded yet. Please add readings from the form above.</td>
-                </tr>
-            `;
+            tableBody.innerHTML = `<tr><td colspan="8" class="empty-state-table-cell">No data recorded yet. Please add readings from the form above.</td></tr>`;
         }
         document.getElementById("samplesCount").innerText = "0";
         document.getElementById("avgScore").innerText = "0.00";
         document.getElementById("status").innerText = "-";
         document.getElementById("status").className = "";
-        
         destroyChartInstances();
         return;
     }
 
-    if(tableBody) {
-        tableBody.innerHTML = "";
-    }
-    
-    let aggregatedScoresSum = 0;
-    let safeCount = 0;
-    let moderateCount = 0;
-    let dangerCount = 0;
+    if(tableBody) { tableBody.innerHTML = ""; }
+    let aggregatedScoresSum = 0, safeCount = 0, moderateCount = 0, dangerCount = 0;
 
     for (let i = 0; i < currentSamples.length; i++) {
         let sample = currentSamples[i];
         aggregatedScoresSum += sample.finalScore;
-        
-        if(sample.status === "Safe") {
-            safeCount++;
-        } else if(sample.status === "Moderate") {
-            moderateCount++;
-        } else {
-            dangerCount++;
-        }
+        if(sample.status === "Safe") safeCount++;
+        else if(sample.status === "Moderate") moderateCount++;
+        else dangerCount++;
 
         let tr = document.createElement("tr");
-        let dynamicCssClass = "";
-        if(sample.status === "Safe") dynamicCssClass = "status-safe";
-        else if(sample.status === "Moderate") dynamicCssClass = "status-moderate";
-        else dynamicCssClass = "status-danger";
-
-        tr.innerHTML = `
-            <td>${sample.sampleIndex}</td>
-            <td><strong>${sample.liquidName}</strong></td>
-            <td>${sample.scatterValue.toFixed(1)}</td>
-            <td>${sample.transmissionValue.toFixed(1)}</td>
-            <td>${sample.turbidityValue.toFixed(1)}</td>
-            <td>${sample.finalScore.toFixed(2)}</td>
-            <td class="${dynamicCssClass}">${sample.status}</td>
-            <td style="font-size: 0.85rem; text-align: left; color: #475569;">${sample.tip}</td>
-        `;
-        if(tableBody) {
-            tableBody.appendChild(tr);
-        }
+        let cls = sample.status === "Safe" ? "status-safe" : (sample.status === "Moderate" ? "status-moderate" : "status-danger");
+        tr.innerHTML = `<td>${sample.sampleIndex}</td>
+                        <td><strong>${sample.liquidName}</strong></td>
+                        <td>${sample.scatterValue.toFixed(1)}</td>
+                        <td>${sample.transmissionValue.toFixed(1)}</td>
+                        <td>${sample.turbidityValue.toFixed(1)}</td>
+                        <td>${sample.finalScore.toFixed(2)}</td>
+                        <td class="${cls}">${sample.status}</td>
+                        <td style="font-size: 0.85rem; text-align: left; color: #475569;">${sample.tip}</td>`;
+        if(tableBody) { tableBody.appendChild(tr); }
     }
 
-    let currentLength = currentSamples.length;
-    let finalCalculatedAverageScore = aggregatedScoresSum / currentLength;
-    
-    document.getElementById("samplesCount").innerText = currentLength;
+    let finalCalculatedAverageScore = aggregatedScoresSum / currentSamples.length;
+    document.getElementById("samplesCount").innerText = currentSamples.length;
     document.getElementById("avgScore").innerText = finalCalculatedAverageScore.toFixed(2);
     
     let statusBoxEl = document.getElementById("status");
     if(statusBoxEl) {
-        let overallStatusOutcome = "";
         if (finalCalculatedAverageScore < 20) {
-            overallStatusOutcome = "Safe Level Parameters";
-            statusBoxEl.className = "status-safe";
+            statusBoxEl.innerText = "Safe Level Parameters"; statusBoxEl.className = "status-safe";
         } else if (finalCalculatedAverageScore >= 20 && finalCalculatedAverageScore <= 50) {
-            overallStatusOutcome = "Moderate Warning Zone";
-            statusBoxEl.className = "status-moderate";
+            statusBoxEl.innerText = "Moderate Warning Zone"; statusBoxEl.className = "status-moderate";
         } else {
-            overallStatusOutcome = "Critical Danger Limit";
-            statusBoxEl.className = "status-danger";
+            statusBoxEl.innerText = "Critical Danger Limit"; statusBoxEl.className = "status-danger";
         }
-        statusBoxEl.innerText = overallStatusOutcome;
     }
-
     renderAnalyticalCharts(safeCount, moderateCount, dangerCount);
 }
 
 function destroyChartInstances() {
-    if(barChartInstance) {
-        barChartInstance.destroy();
-        barChartInstance = null;
-    }
-    if(pieChartInstance) {
-        pieChartInstance.destroy();
-        pieChartInstance = null;
-    }
+    if(barChartInstance) { barChartInstance.destroy(); barChartInstance = null; }
+    if(pieChartInstance) { pieChartInstance.destroy(); pieChartInstance = null; }
 }
 
 function renderAnalyticalCharts(safeTicks, moderateTicks, dangerTicks) {
     let barCanvas = document.getElementById("scoreChart");
     let pieCanvas = document.getElementById("pieChart");
-    
     if(!barCanvas || !pieCanvas) return;
 
-    let barCanvasCtx = barCanvas.getContext("2d");
-    let pieCanvasCtx = pieCanvas.getContext("2d");
-
-    let chartLabels = [];
-    let chartDataScores = [];
-    let chartColorsBar = [];
-
+    let chartLabels = [], chartDataScores = [], chartColorsBar = [];
     for (let i = 0; i < currentSamples.length; i++) {
         chartLabels.push("Sample " + currentSamples[i].sampleIndex);
         chartDataScores.push(currentSamples[i].finalScore);
-        if(currentSamples[i].status === "Safe") {
-            chartColorsBar.push("#16a34a");
-        } else if(currentSamples[i].status === "Moderate") {
-            chartColorsBar.push("#eab308");
-        } else {
-            chartColorsBar.push("#ef4444");
-        }
+        chartColorsBar.push(currentSamples[i].status === "Safe" ? "#16a34a" : (currentSamples[i].status === "Moderate" ? "#eab308" : "#ef4444"));
     }
 
-    if(barChartInstance) {
-        barChartInstance.destroy();
-    }
-    if(pieChartInstance) {
-        pieChartInstance.destroy();
-    }
+    if(barChartInstance) barChartInstance.destroy();
+    if(pieChartInstance) pieChartInstance.destroy();
 
-    barChartInstance = new Chart(barCanvasCtx, {
+    barChartInstance = new Chart(barCanvas.getContext("2d"), {
         type: 'bar',
         data: {
             labels: chartLabels,
-            datasets: [{
-                label: 'Sensor Disruption Score Index',
-                data: chartDataScores,
-                backgroundColor: chartColorsBar,
-                borderColor: '#1e293b',
-                borderWidth: 1
-            }]
+            datasets: [{ label: 'Sensor Disruption Score Index', data: chartDataScores, backgroundColor: chartColorsBar, borderColor: '#1e293b', borderWidth: 1 }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100
-                }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } }
     });
 
-    pieChartInstance = new Chart(pieCanvasCtx, {
+    pieChartInstance = new Chart(pieCanvas.getContext("2d"), {
         type: 'pie',
         data: {
             labels: ['Clear Layer Samples', 'Cautionary Warning Segments', 'Hazard Deflection Records'],
-            datasets: [{
-                data: [safeTicks, moderateTicks, dangerTicks],
-                backgroundColor: ['#16a34a', '#eab308', '#ef4444'],
-                borderWidth: 1.5,
-                borderColor: '#ffffff'
-            }]
+            datasets: [{ data: [safeTicks, moderateTicks, dangerTicks], backgroundColor: ['#16a34a', '#eab308', '#ef4444'], borderWidth: 1.5, borderColor: '#ffffff' }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 }
 
@@ -467,49 +383,28 @@ function storeFinalBatchResult() {
     }
 
     let scoreSum = 0;
-    for (let i = 0; i < currentSamples.length; i++) {
-        scoreSum += currentSamples[i].finalScore;
-    }
-    
+    for (let i = 0; i < currentSamples.length; i++) { scoreSum += currentSamples[i].finalScore; }
     let finalCalculatedAverageScore = scoreSum / currentSamples.length;
     
-    let consolidatedFinalStatus = "";
-    if (finalCalculatedAverageScore < 20) {
-        consolidatedFinalStatus = "Safe";
-    } else if (finalCalculatedAverageScore >= 20 && finalCalculatedAverageScore <= 50) {
-        consolidatedFinalStatus = "Moderate";
-    } else {
-        consolidatedFinalStatus = "Danger";
-    }
-    
+    let consolidatedFinalStatus = finalCalculatedAverageScore < 20 ? "Safe" : (finalCalculatedAverageScore <= 50 ? "Moderate" : "Danger");
     let samplesBackupCopy = JSON.parse(JSON.stringify(currentSamples));
 
     if(activeEditingRecordId !== null) {
-        let indexToUpdate = -1;
-        for (let i = 0; i < storedDatabase.length; i++) {
-            if (storedDatabase[i].uniqueId === activeEditingRecordId) {
-                indexToUpdate = i;
-                break;
-            }
-        }
-        if(indexToUpdate !== -1) {
-            storedDatabase[indexToUpdate].materialName = getActiveLiquidName();
-            storedDatabase[indexToUpdate].samplesSize = currentSamples.length;
-            storedDatabase[indexToUpdate].avgScoreValue = finalCalculatedAverageScore.toFixed(2);
-            storedDatabase[indexToUpdate].finalStatusVerdict = consolidatedFinalStatus;
-            storedDatabase[indexToUpdate].rawSamplesData = samplesBackupCopy;
-            
+        let idx = storedDatabase.findIndex(r => r.uniqueId === activeEditingRecordId);
+        if(idx !== -1) {
+            storedDatabase[idx].materialName = getActiveLiquidName();
+            storedDatabase[idx].samplesSize = currentSamples.length;
+            storedDatabase[idx].avgScoreValue = finalCalculatedAverageScore.toFixed(2);
+            storedDatabase[idx].finalStatusVerdict = consolidatedFinalStatus;
+            storedDatabase[idx].rawSamplesData = samplesBackupCopy;
             alert("Success! Record log entries updated successfully in storage registry table.");
-            activeEditingRecordId = null;
-            document.getElementById("customLiquid").value = "";
-            resetCurrentLiquidSamples();
-            saveToLocalStorage();
-            refreshDatabaseHistoryTableLogs();
+            activeEditingRecordId = null; document.getElementById("customLiquid").value = "";
+            resetCurrentLiquidSamples(); saveToLocalStorage(); refreshDatabaseHistoryTableLogs();
             return;
         }
     }
 
-    let databaseRecordItem = {
+    storedDatabase.push({
         uniqueId: Date.now(),
         timestamp: new Date().toLocaleString(),
         materialName: getActiveLiquidName(),
@@ -517,14 +412,9 @@ function storeFinalBatchResult() {
         avgScoreValue: finalCalculatedAverageScore.toFixed(2),
         finalStatusVerdict: consolidatedFinalStatus,
         rawSamplesData: samplesBackupCopy
-    };
-
-    storedDatabase.push(databaseRecordItem);
-    saveToLocalStorage();
-    refreshDatabaseHistoryTableLogs();
-
+    });
+    saveToLocalStorage(); refreshDatabaseHistoryTableLogs();
     alert("Success! Current water source dataset saved permanently to local history table row.");
-    
     document.getElementById("customLiquid").value = "";
     resetCurrentLiquidSamples();
 }
@@ -532,148 +422,78 @@ function storeFinalBatchResult() {
 function refreshDatabaseHistoryTableLogs() {
     let historyBody = document.getElementById("historyTableBody");
     if(!historyBody) return;
-    
     if(storedDatabase.length === 0) {
-        historyBody.innerHTML = `
-            <tr>
-                <td colspan="6" class="empty-state-table-cell">No permanent records saved yet. Save active materials entries to show history log vectors.</td>
-            </tr>
-        `;
+        historyBody.innerHTML = `<tr><td colspan="6" class="empty-state-table-cell">No permanent records saved yet. Save active liquids entries to show history log vectors.</td></tr>`;
         return;
     }
-
     historyBody.innerHTML = "";
-
     for(let i = storedDatabase.length - 1; i >= 0; i--) {
         let item = storedDatabase[i];
         let row = document.createElement("tr");
-        
-        let statusClassStyle = "";
-        if(item.finalStatusVerdict === "Safe") statusClassStyle = "status-safe";
-        else if(item.finalStatusVerdict === "Moderate") statusClassStyle = "status-moderate";
-        else statusClassStyle = "status-danger";
-
-        row.innerHTML = `
-            <td>${item.timestamp}</td>
-            <td><strong>${item.materialName}</strong></td>
-            <td>${item.samplesSize} Item Tracks</td>
-            <td>${item.avgScoreValue}</td>
-            <td class="${statusClassStyle}">${item.finalStatusVerdict}</td>
-            <td>
-                <button class="load-btn" onclick="editStoredMaterialDataset(${item.uniqueId})">✏️ Edit</button>
-                <button class="export-btn" onclick="generateDeviceReportPDF(${item.uniqueId})">📥 PDF Report</button>
-                <button class="share-btn" onclick="shareMaterialDataset(${item.uniqueId})">🔗 Share Matrix</button>
-                <button class="delete-btn" onclick="deleteStoredMaterialDataset(${item.uniqueId})">❌ Remove</button>
-            </td>
-        `;
+        let cls = item.finalStatusVerdict === "Safe" ? "status-safe" : (item.finalStatusVerdict === "Moderate" ? "status-moderate" : "status-danger");
+        row.innerHTML = `<td>${item.timestamp}</td>
+                        <td><strong>${item.materialName}</strong></td>
+                        <td>${item.samplesSize} Item Tracks</td>
+                        <td>${item.avgScoreValue}</td>
+                        <td class="${cls}">${item.finalStatusVerdict}</td>
+                        <td>
+                            <button class="load-btn" onclick="editStoredMaterialDataset(${item.uniqueId})">✏️ Edit</button>
+                            <button class="export-btn" onclick="generateDeviceReportPDF(${item.uniqueId})">📥 PDF Report</button>
+                            <button class="share-btn" onclick="shareMaterialDataset(${item.uniqueId})">🔗 Share Matrix</button>
+                            <button class="delete-btn" onclick="deleteStoredMaterialDataset(${item.uniqueId})">❌ Remove</button>
+                        </td>`;
         historyBody.appendChild(row);
     }
 }
 
 function editStoredMaterialDataset(targetId) {
-    let matchedRecord = null;
-    for (let i = 0; i < storedDatabase.length; i++) {
-        if (storedDatabase[i].uniqueId === targetId) {
-            matchedRecord = storedDatabase[i];
-            break;
-        }
-    }
-    
-    if(!matchedRecord) {
-        alert("Error: Target record element index locator trace returned null.");
-        return;
-    }
+    let matchedRecord = storedDatabase.find(r => r.uniqueId === targetId);
+    if(!matchedRecord) { alert("Error: Target record element index locator trace returned null."); return; }
 
     activeEditingRecordId = targetId;
     document.getElementById("customLiquid").value = matchedRecord.materialName;
     currentSamples = JSON.parse(JSON.stringify(matchedRecord.rawSamplesData));
-
     let actionBtn = document.getElementById("addSampleBtn");
     if(actionBtn) {
-        actionBtn.disabled = false;
-        actionBtn.style.opacity = "1";
+        actionBtn.disabled = false; actionBtn.style.opacity = "1";
         actionBtn.innerText = "Save Modified Parameters Array Data";
     }
-
     updateUserInterfaceLogs();
     alert("Editing Mode: Content loaded back onto configuration inputs fields layers.");
 }
 
 function generateDeviceReportPDF(targetId) {
-    let matchedRecord = null;
-    for (let i = 0; i < storedDatabase.length; i++) {
-        if (storedDatabase[i].uniqueId === targetId) {
-            matchedRecord = storedDatabase[i];
-            break;
-        }
-    }
-    
-    if(!matchedRecord) {
-        alert("Error: Report setup tracking failed due to missing record traces index points.");
-        return;
-    }
+    let matchedRecord = storedDatabase.find(r => r.uniqueId === targetId);
+    if(!matchedRecord) { alert("Error: Report setup tracking failed due to missing record traces index points."); return; }
 
     document.getElementById("customLiquid").value = matchedRecord.materialName;
     currentSamples = JSON.parse(JSON.stringify(matchedRecord.rawSamplesData));
     updateUserInterfaceLogs();
-
     setTimeout(() => {
         let originalTitle = document.title;
         document.title = "Lab_Sensor_Report_" + matchedRecord.materialName.replace(/\s+/g, "_");
-        window.print();
-        document.title = originalTitle;
+        window.print(); document.title = originalTitle;
     }, 500);
 }
 
 function shareMaterialDataset(targetId) {
-    let matchedRecord = null;
-    for (let i = 0; i < storedDatabase.length; i++) {
-        if (storedDatabase[i].uniqueId === targetId) {
-            matchedRecord = storedDatabase[i];
-            break;
-        }
-    }
-    if(!matchedRecord) {
-        alert("Record extraction error.");
-        return;
-    }
-    
-    let shareText = `🔬 *Microplastic System Analysis Record Snapshot* 🔬\n\n` +
-                    `🔹 *Medium Allocation:* ${matchedRecord.materialName}\n` +
-                    `🔹 *Evaluated Data Points:* ${matchedRecord.samplesSize} Sequences\n` +
-                    `🔹 *Mean Calibration Metric:* ${matchedRecord.avgScoreValue} Raw Units\n` +
-                    `🔹 *Safety Verdict Outcome:* ${matchedRecord.finalStatusVerdict.toUpperCase()}\n\n` +
-                    `📊 _Simulated via Core Photodiode Refraction Laboratory Application Node Module._`;
+    let matchedRecord = storedDatabase.find(r => r.uniqueId === targetId);
+    if(!matchedRecord) { alert("Record extraction error."); return; }
+    let shareText = `🔬 *Microplastic System Analysis Record Snapshot* 🔬\n\n🔹 *Medium Allocation:* ${matchedRecord.materialName}\n🔹 *Evaluated Data Points:* ${matchedRecord.samplesSize} Sequences\n🔹 *Mean Calibration Metric:* ${matchedRecord.avgScoreValue} Raw Units\n🔹 *Safety Verdict Outcome:* ${matchedRecord.finalStatusVerdict.toUpperCase()}\n\n📊 _Simulated via Core Photodiode Refraction Laboratory Application Node Module._`;
 
     if (navigator.share) {
-        navigator.share({
-            title: 'Optical Microplastic Laboratory Analytics Node',
-            text: shareText,
-            url: window.location.href
-        })
+        navigator.share({ title: 'Optical Microplastic Laboratory Analytics Node', text: shareText, url: window.location.href })
         .then(() => alert("Broadcast complete. Stream synchronized across system drawers."))
-        .catch((error) => {
-            navigator.clipboard.writeText(shareText);
-            alert("System Drawer Cancelled: Report compiled to system buffer clipboard structures instead.");
-        });
+        .catch(() => { navigator.clipboard.writeText(shareText); alert("System Drawer Cancelled: Report compiled to system clipboard."); });
     } else {
-        navigator.clipboard.writeText(shareText).then(() => {
-            alert("Clipboard Sync: Native sharing context layout unsupported on this runtime container. Raw metrics string exported to system copy layers.");
-        });
+        navigator.clipboard.writeText(shareText).then(() => { alert("Clipboard Sync: Native sharing context layout unsupported on this runtime container. Raw metrics string exported to system copy layers."); });
     }
 }
 
 function deleteStoredMaterialDataset(targetId) {
     if (confirm("Are you sure you want to delete this material record trace permanently from memory cache?")) {
-        let temporaryRegistry = [];
-        for (let i = 0; i < storedDatabase.length; i++) {
-            if (storedDatabase[i].uniqueId !== targetId) {
-                temporaryRegistry.push(storedDatabase[i]);
-            }
-        }
-        storedDatabase = temporaryRegistry;
-        saveToLocalStorage();
-        refreshDatabaseHistoryTableLogs();
+        storedDatabase = storedDatabase.filter(r => r.uniqueId !== targetId);
+        saveToLocalStorage(); refreshDatabaseHistoryTableLogs();
         alert("Purge Complete: Row deleted successfully from the project log list.");
     }
 }
