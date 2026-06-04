@@ -3,14 +3,184 @@ let storedDatabase = [];
 let activeEditingRecordId = null;
 let barChartInstance = null;
 let pieChartInstance = null;
+let captchaCorrectAnswer = null;
 
 window.onload = function() {
+    let sessionEmail = localStorage.getItem("microplastic_user_session");
+    let sessionName = localStorage.getItem("microplastic_user_name");
+    
+    if (sessionEmail && sessionName) {
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("printableReportArea").style.display = "block";
+        document.getElementById("displayUserSessionEmail").innerText = sessionEmail;
+        document.getElementById("displayUserSessionName").innerText = sessionName;
+        
+        let initialLetter = sessionName.charAt(0).toUpperCase();
+        document.getElementById("avatarLetterIcon").innerText = initialLetter;
+    } else {
+        generateMathCaptcha();
+    }
+
     let savedData = localStorage.getItem("microplastic_project_db");
     if (savedData) {
         storedDatabase = JSON.parse(savedData);
         refreshDatabaseHistoryTableLogs();
     }
 };
+
+function generateMathCaptcha() {
+    let num1 = Math.floor(Math.random() * 12) + 1;
+    let num2 = Math.floor(Math.random() * 12) + 1;
+    captchaCorrectAnswer = num1 + num2;
+    document.getElementById("captchaQuestion").innerText = num1 + " + " + num2 + " = ?";
+    document.getElementById("captchaInput").value = "";
+}
+
+function handleUserLoginAuthentication() {
+    let nameVal = document.getElementById("registerName").value.trim();
+    let userVal = document.getElementById("loginUser").value.trim();
+    let passVal = document.getElementById("loginPass").value;
+    let captchaVal = document.getElementById("captchaInput").value;
+
+    if (nameVal === "" || userVal === "" || passVal === "") {
+        alert("Error: Please enter Name, Email and Password fields.");
+        return;
+    }
+
+    if (Number(captchaVal) !== captchaCorrectAnswer) {
+        alert("Error: Wrong captcha answer. Please calculate correctly.");
+        generateMathCaptcha();
+        return;
+    }
+
+    let usersRegistryKey = "microplastic_registered_users";
+    let simulatedUserDatabase = [];
+    let savedUsers = localStorage.getItem(usersRegistryKey);
+    
+    if (savedUsers) {
+        simulatedUserDatabase = JSON.parse(savedUsers);
+    }
+
+    let matchedUserRecord = null;
+    for (let i = 0; i < simulatedUserDatabase.length; i++) {
+        if (simulatedUserDatabase[i].email === userVal) {
+            matchedUserRecord = simulatedUserDatabase[i];
+            break;
+        }
+    }
+
+    if (matchedUserRecord === null) {
+        let newProfileRecord = {
+            name: nameVal,
+            email: userVal,
+            password: passVal
+        };
+        simulatedUserDatabase.push(newProfileRecord);
+        localStorage.setItem(usersRegistryKey, JSON.stringify(simulatedUserDatabase));
+        
+        localStorage.setItem("microplastic_user_session", userVal);
+        localStorage.setItem("microplastic_user_name", nameVal);
+        
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("printableReportArea").style.display = "block";
+        document.getElementById("displayUserSessionEmail").innerText = userVal;
+        document.getElementById("displayUserSessionName").innerText = nameVal;
+        
+        let initialLetter = nameVal.charAt(0).toUpperCase();
+        document.getElementById("avatarLetterIcon").innerText = initialLetter;
+        
+        alert("Account Created! Registration successful in local memory container.");
+    } else {
+        if (matchedUserRecord.password === passVal) {
+            localStorage.setItem("microplastic_user_session", userVal);
+            localStorage.setItem("microplastic_user_name", matchedUserRecord.name);
+            
+            document.getElementById("loginPage").style.display = "none";
+            document.getElementById("printableReportArea").style.display = "block";
+            document.getElementById("displayUserSessionEmail").innerText = userVal;
+            document.getElementById("displayUserSessionName").innerText = matchedUserRecord.name;
+            
+            let initialLetter = matchedUserRecord.name.charAt(0).toUpperCase();
+            document.getElementById("avatarLetterIcon").innerText = initialLetter;
+            
+            alert("Login Successful! Welcome to Project System Dashboard.");
+        } else {
+            alert("Error: Incorrect password. Please try again.");
+            generateMathCaptcha();
+        }
+    }
+}
+
+function handleUserLogoutSession() {
+    if (confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem("microplastic_user_session");
+        localStorage.removeItem("microplastic_user_name");
+        document.getElementById("profileDropdownMenu").classList.remove("show-dropdown");
+        document.getElementById("printableReportArea").style.display = "none";
+        document.getElementById("loginPage").style.display = "flex";
+        document.getElementById("registerName").value = "";
+        document.getElementById("loginUser").value = "";
+        document.getElementById("loginPass").value = "";
+        generateMathCaptcha();
+    }
+}
+
+function toggleUserProfileDropdownMenu() {
+    document.getElementById("profileDropdownMenu").classList.toggle("show-dropdown");
+}
+
+window.onclick = function(event) {
+    if (!event.target.matches('.circular-avatar-trigger') && !event.target.matches('#avatarLetterIcon')) {
+        let menuPanel = document.getElementById("profileDropdownMenu");
+        if (menuPanel && menuPanel.classList.contains('show-dropdown')) {
+            menuPanel.classList.remove('show-dropdown');
+        }
+    }
+};
+
+function triggerSystemModalDialog(contentType) {
+    let titleEl = document.getElementById("modalBoxTitle");
+    let contentEl = document.getElementById("modalBoxContent");
+    
+    let menuPanel = document.getElementById("profileDropdownMenu");
+    if(menuPanel) {
+        menuPanel.classList.remove("show-dropdown");
+    }
+
+    let activeSessionEmail = localStorage.getItem("microplastic_user_session") || "user@example.com";
+    let activeSessionName = localStorage.getItem("microplastic_user_name") || "Operator Name";
+
+    if (contentType === 'profile') {
+        titleEl.innerText = "👤 My Lab Profile Account Info";
+        contentEl.innerHTML = `<strong>Operator Name:</strong> ${activeSessionName}<br>
+                               <strong>Registered Email:</strong> ${activeSessionEmail}<br>
+                               <strong>Contact Number:</strong> +91 98765-43210 (Simulation)<br>
+                               <strong>Lab Location Node:</strong> College Laboratory Campus Center<br>
+                               <strong>System Access Level:</strong> Project System Admin / Tier 1 Controller`;
+    } else if (contentType === 'about') {
+        titleEl.innerText = "ℹ️ About Our Minor Project Model";
+        contentEl.innerHTML = `This project dashboard is designed to simulate a real hardware optical microplastic tracking device.<br><br>
+                               When laser light passes through water samples, it gets scattered by plastic waste particles. 
+                               The photodiode measures this distortion and calculates a score index to analyze the purity level of different water materials.`;
+    } else if (contentType === 'terms') {
+        titleEl.innerText = "⚖️ Project Terms & Conditions";
+        contentEl.innerHTML = `* This application runs fully on client-side sandboxed local processing loops.<br>
+                               * All sample arrays data entries stay completely inside your device browser local cache storage.<br>
+                               * Users should check calibration and analog sensor hardware configurations before creating final reports rows.`;
+    } else if (contentType === 'help') {
+        titleEl.innerText = "❓ Project Troubleshooting Help Desk";
+        contentEl.innerHTML = `<strong>Quick Help Guide:</strong><br>
+                               * <strong>Charts not loading?</strong> Add sensor values entries inside the input box form first.<br>
+                               * <strong>PDF printing cutting borders?</strong> Change your browser print layout target profile destination to 'Save as PDF'.<br>
+                               * For hardware pin-outs, please refer to standard Arduino Uno breadboard wire charts.`;
+    }
+
+    document.getElementById("infoDialogModal").style.display = "flex";
+}
+
+function closeSystemModalDialog() {
+    document.getElementById("infoDialogModal").style.display = "none";
+}
 
 function saveToLocalStorage() {
     localStorage.setItem("microplastic_project_db", JSON.stringify(storedDatabase));
@@ -29,10 +199,10 @@ function getActiveLiquidName() {
         return customVal;
     }
     let selectEl = document.getElementById("liquidSelect");
-    if(selectEl.selectedIndex !== -1) {
+    if(selectEl && selectEl.selectedIndex !== -1) {
         return selectEl.options[selectEl.selectedIndex].value;
     }
-    return "Unknown Material Source";
+    return "Standard Water Sample";
 }
 
 function resetCurrentLiquidSamples() {
@@ -43,9 +213,12 @@ function resetCurrentLiquidSamples() {
     document.getElementById("transmissionVal").value = "";
     document.getElementById("turbidityVal").value = "";
     
-    document.getElementById("addSampleBtn").disabled = false;
-    document.getElementById("addSampleBtn").style.opacity = "1";
-    document.getElementById("addSampleBtn").innerText = "Analyze Sample Reading";
+    let actionBtn = document.getElementById("addSampleBtn");
+    if(actionBtn) {
+        actionBtn.disabled = false;
+        actionBtn.style.opacity = "1";
+        actionBtn.innerText = "Add Sample Data";
+    }
     
     updateUserInterfaceLogs();
 }
@@ -56,7 +229,7 @@ function addSampleData() {
     let turbidityInput = document.getElementById("turbidityVal").value;
 
     if(scatterInput === "" || transmissionInput === "" || turbidityInput === "") {
-        alert("Please specify value reading configurations for Scatter, Transmission, and Turbidity fields.");
+        alert("Please enter values for Scatter, Transmission, and Turbidity fields before adding data.");
         return;
     }
 
@@ -65,7 +238,7 @@ function addSampleData() {
     let turbidity = Number(turbidityInput);
 
     if(scatter < 0 || transmission < 0 || turbidity < 0) {
-        alert("Physical properties data attributes cannot hold negative values parameters.");
+        alert("Error: Sensor input reading metrics cannot possess negative numbers values.");
         return;
     }
 
@@ -109,14 +282,18 @@ function updateUserInterfaceLogs() {
     let tableBody = document.getElementById("currentTableBody");
     let sampleCounterLabel = document.getElementById("currentSampleNumber");
     
-    sampleCounterLabel.innerText = "Sample " + (currentSamples.length + 1);
+    if(sampleCounterLabel) {
+        sampleCounterLabel.innerText = "Sample " + (currentSamples.length + 1);
+    }
 
     if(currentSamples.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="8" style="color: #888;">No readings added yet. Fill values in fields above to display data matrix records.</td>
-            </tr>
-        `;
+        if(tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty-state-table-cell">No data recorded yet. Please add readings from the form above.</td>
+                </tr>
+            `;
+        }
         document.getElementById("samplesCount").innerText = "0";
         document.getElementById("avgScore").innerText = "0.00";
         document.getElementById("status").innerText = "-";
@@ -126,13 +303,17 @@ function updateUserInterfaceLogs() {
         return;
     }
 
-    tableBody.innerHTML = "";
+    if(tableBody) {
+        tableBody.innerHTML = "";
+    }
+    
     let aggregatedScoresSum = 0;
     let safeCount = 0;
     let moderateCount = 0;
     let dangerCount = 0;
 
-    currentSamples.forEach(sample => {
+    for (let i = 0; i < currentSamples.length; i++) {
+        let sample = currentSamples[i];
         aggregatedScoresSum += sample.finalScore;
         
         if(sample.status === "Safe") {
@@ -157,10 +338,12 @@ function updateUserInterfaceLogs() {
             <td>${sample.turbidityValue.toFixed(1)}</td>
             <td>${sample.finalScore.toFixed(2)}</td>
             <td class="${dynamicCssClass}">${sample.status}</td>
-            <td style="font-size: 0.85rem; text-align: left; color: #555;">${sample.tip}</td>
+            <td style="font-size: 0.85rem; text-align: left; color: #475569;">${sample.tip}</td>
         `;
-        tableBody.appendChild(tr);
-    });
+        if(tableBody) {
+            tableBody.appendChild(tr);
+        }
+    }
 
     let currentLength = currentSamples.length;
     let finalCalculatedAverageScore = aggregatedScoresSum / currentLength;
@@ -169,19 +352,20 @@ function updateUserInterfaceLogs() {
     document.getElementById("avgScore").innerText = finalCalculatedAverageScore.toFixed(2);
     
     let statusBoxEl = document.getElementById("status");
-    let overallStatusOutcome = "";
-
-    if (finalCalculatedAverageScore < 20) {
-        overallStatusOutcome = "Safe";
-        statusBoxEl.className = "status-safe";
-    } else if (finalCalculatedAverageScore >= 20 && finalCalculatedAverageScore <= 50) {
-        overallStatusOutcome = "Moderate Warning";
-        statusBoxEl.className = "status-moderate";
-    } else {
-        overallStatusOutcome = "Danger";
-        statusBoxEl.className = "status-danger";
+    if(statusBoxEl) {
+        let overallStatusOutcome = "";
+        if (finalCalculatedAverageScore < 20) {
+            overallStatusOutcome = "Safe Level Parameters";
+            statusBoxEl.className = "status-safe";
+        } else if (finalCalculatedAverageScore >= 20 && finalCalculatedAverageScore <= 50) {
+            overallStatusOutcome = "Moderate Warning Zone";
+            statusBoxEl.className = "status-moderate";
+        } else {
+            overallStatusOutcome = "Critical Danger Limit";
+            statusBoxEl.className = "status-danger";
+        }
+        statusBoxEl.innerText = overallStatusOutcome;
     }
-    statusBoxEl.innerText = overallStatusOutcome;
 
     renderAnalyticalCharts(safeCount, moderateCount, dangerCount);
 }
@@ -198,17 +382,29 @@ function destroyChartInstances() {
 }
 
 function renderAnalyticalCharts(safeTicks, moderateTicks, dangerTicks) {
-    let barCanvasCtx = document.getElementById("scoreChart").getContext("2d");
-    let pieCanvasCtx = document.getElementById("pieChart").getContext("2d");
-
-    let chartLabels = currentSamples.map(s => "Sample " + s.sampleIndex);
-    let chartDataScores = currentSamples.map(s => s.finalScore);
+    let barCanvas = document.getElementById("scoreChart");
+    let pieCanvas = document.getElementById("pieChart");
     
-    let chartColorsBar = currentSamples.map(s => {
-        if(s.status === "Safe") return "#198754";
-        if(s.status === "Moderate") return "#ffc107";
-        return "#dc3545";
-    });
+    if(!barCanvas || !pieCanvas) return;
+
+    let barCanvasCtx = barCanvas.getContext("2d");
+    let pieCanvasCtx = pieCanvas.getContext("2d");
+
+    let chartLabels = [];
+    let chartDataScores = [];
+    let chartColorsBar = [];
+
+    for (let i = 0; i < currentSamples.length; i++) {
+        chartLabels.push("Sample " + currentSamples[i].sampleIndex);
+        chartDataScores.push(currentSamples[i].finalScore);
+        if(currentSamples[i].status === "Safe") {
+            chartColorsBar.push("#16a34a");
+        } else if(currentSamples[i].status === "Moderate") {
+            chartColorsBar.push("#eab308");
+        } else {
+            chartColorsBar.push("#ef4444");
+        }
+    }
 
     if(barChartInstance) {
         barChartInstance.destroy();
@@ -222,36 +418,20 @@ function renderAnalyticalCharts(safeTicks, moderateTicks, dangerTicks) {
         data: {
             labels: chartLabels,
             datasets: [{
-                label: 'Contamination Raw Score Value',
+                label: 'Sensor Disruption Score Index',
                 data: chartDataScores,
                 backgroundColor: chartColorsBar,
-                borderColor: chartColorsBar.map(c => c === "#198754" ? "#146c43" : (c === "#ffc107" ? "#d39e00" : "#b02a37")),
-                borderWidth: 1.5
+                borderColor: '#1e293b',
+                borderWidth: 1
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let idx = context.dataIndex;
-                            let sample = currentSamples[idx];
-                            return [
-                                " Raw Sensor Score: " + sample.finalScore.toFixed(2),
-                                " Safety Status: " + sample.status,
-                                " Reason/Tip: " + sample.tip
-                            ];
-                        }
-                    }
-                }
-            },
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100,
-                    title: { display: true, text: 'Raw Score Index' }
+                    max: 100
                 }
             }
         }
@@ -260,11 +440,11 @@ function renderAnalyticalCharts(safeTicks, moderateTicks, dangerTicks) {
     pieChartInstance = new Chart(pieCanvasCtx, {
         type: 'pie',
         data: {
-            labels: ['Safe Samples', 'Moderate Samples', 'Danger Samples'],
+            labels: ['Clear Layer Samples', 'Cautionary Warning Segments', 'Hazard Deflection Records'],
             datasets: [{
                 data: [safeTicks, moderateTicks, dangerTicks],
-                backgroundColor: ['#198754', '#ffc107', '#dc3545'],
-                borderWidth: 2,
+                backgroundColor: ['#16a34a', '#eab308', '#ef4444'],
+                borderWidth: 1.5,
                 borderColor: '#ffffff'
             }]
         },
@@ -282,14 +462,14 @@ function renderAnalyticalCharts(safeTicks, moderateTicks, dangerTicks) {
 
 function storeFinalBatchResult() {
     if(currentSamples.length === 0) {
-        alert("No readings configured in buffer stack memory. Add tracking readings data variables first.");
+        alert("Error: Cannot save empty sample records. Please insert readings values first.");
         return;
     }
 
     let scoreSum = 0;
-    currentSamples.forEach(s => {
-        scoreSum += s.finalScore;
-    });
+    for (let i = 0; i < currentSamples.length; i++) {
+        scoreSum += currentSamples[i].finalScore;
+    }
     
     let finalCalculatedAverageScore = scoreSum / currentSamples.length;
     
@@ -305,7 +485,13 @@ function storeFinalBatchResult() {
     let samplesBackupCopy = JSON.parse(JSON.stringify(currentSamples));
 
     if(activeEditingRecordId !== null) {
-        let indexToUpdate = storedDatabase.findIndex(r => r.uniqueId === activeEditingRecordId);
+        let indexToUpdate = -1;
+        for (let i = 0; i < storedDatabase.length; i++) {
+            if (storedDatabase[i].uniqueId === activeEditingRecordId) {
+                indexToUpdate = i;
+                break;
+            }
+        }
         if(indexToUpdate !== -1) {
             storedDatabase[indexToUpdate].materialName = getActiveLiquidName();
             storedDatabase[indexToUpdate].samplesSize = currentSamples.length;
@@ -313,7 +499,7 @@ function storeFinalBatchResult() {
             storedDatabase[indexToUpdate].finalStatusVerdict = consolidatedFinalStatus;
             storedDatabase[indexToUpdate].rawSamplesData = samplesBackupCopy;
             
-            alert("Analysis record changes updated successfully for material log row items!");
+            alert("Success! Record log entries updated successfully in storage registry table.");
             activeEditingRecordId = null;
             document.getElementById("customLiquid").value = "";
             resetCurrentLiquidSamples();
@@ -337,7 +523,7 @@ function storeFinalBatchResult() {
     saveToLocalStorage();
     refreshDatabaseHistoryTableLogs();
 
-    alert("Dataset successfully synchronized in project permanent database records archive!");
+    alert("Success! Current water source dataset saved permanently to local history table row.");
     
     document.getElementById("customLiquid").value = "";
     resetCurrentLiquidSamples();
@@ -345,11 +531,12 @@ function storeFinalBatchResult() {
 
 function refreshDatabaseHistoryTableLogs() {
     let historyBody = document.getElementById("historyTableBody");
+    if(!historyBody) return;
     
     if(storedDatabase.length === 0) {
         historyBody.innerHTML = `
             <tr>
-                <td colspan="7" style="color: #888;">No permanent database records committed yet. Fill metrics and save database tracking dataset.</td>
+                <td colspan="6" class="empty-state-table-cell">No permanent records saved yet. Save active materials entries to show history log vectors.</td>
             </tr>
         `;
         return;
@@ -369,14 +556,14 @@ function refreshDatabaseHistoryTableLogs() {
         row.innerHTML = `
             <td>${item.timestamp}</td>
             <td><strong>${item.materialName}</strong></td>
-            <td>${item.samplesSize} Readings</td>
+            <td>${item.samplesSize} Item Tracks</td>
             <td>${item.avgScoreValue}</td>
             <td class="${statusClassStyle}">${item.finalStatusVerdict}</td>
             <td>
                 <button class="load-btn" onclick="editStoredMaterialDataset(${item.uniqueId})">✏️ Edit</button>
-                <button class="export-btn" onclick="generateDeviceReportPDF(${item.uniqueId})">📥 Export PDF</button>
-                <button class="share-btn" onclick="shareMaterialDataset(${item.uniqueId})">🔗 Share Link</button>
-                <button class="delete-btn" onclick="deleteStoredMaterialDataset(${item.uniqueId})">❌ Delete</button>
+                <button class="export-btn" onclick="generateDeviceReportPDF(${item.uniqueId})">📥 PDF Report</button>
+                <button class="share-btn" onclick="shareMaterialDataset(${item.uniqueId})">🔗 Share Matrix</button>
+                <button class="delete-btn" onclick="deleteStoredMaterialDataset(${item.uniqueId})">❌ Remove</button>
             </td>
         `;
         historyBody.appendChild(row);
@@ -384,10 +571,16 @@ function refreshDatabaseHistoryTableLogs() {
 }
 
 function editStoredMaterialDataset(targetId) {
-    let matchedRecord = storedDatabase.find(record => record.uniqueId === targetId);
+    let matchedRecord = null;
+    for (let i = 0; i < storedDatabase.length; i++) {
+        if (storedDatabase[i].uniqueId === targetId) {
+            matchedRecord = storedDatabase[i];
+            break;
+        }
+    }
     
     if(!matchedRecord) {
-        alert("Requested data record element search algorithm returned null context indicators parameters.");
+        alert("Error: Target record element index locator trace returned null.");
         return;
     }
 
@@ -395,20 +588,28 @@ function editStoredMaterialDataset(targetId) {
     document.getElementById("customLiquid").value = matchedRecord.materialName;
     currentSamples = JSON.parse(JSON.stringify(matchedRecord.rawSamplesData));
 
-    document.getElementById("addSampleBtn").disabled = false;
-    document.getElementById("addSampleBtn").style.opacity = "1";
-    document.getElementById("addSampleBtn").innerText = "Save & Update Sample";
+    let actionBtn = document.getElementById("addSampleBtn");
+    if(actionBtn) {
+        actionBtn.disabled = false;
+        actionBtn.style.opacity = "1";
+        actionBtn.innerText = "Save Modified Parameters Array Data";
+    }
 
     updateUserInterfaceLogs();
-    
-    alert("Editing mode initialized. Alter fields values parameters or append more readings records securely.");
+    alert("Editing Mode: Content loaded back onto configuration inputs fields layers.");
 }
 
 function generateDeviceReportPDF(targetId) {
-    let matchedRecord = storedDatabase.find(record => record.uniqueId === targetId);
+    let matchedRecord = null;
+    for (let i = 0; i < storedDatabase.length; i++) {
+        if (storedDatabase[i].uniqueId === targetId) {
+            matchedRecord = storedDatabase[i];
+            break;
+        }
+    }
     
     if(!matchedRecord) {
-        alert("Report context pipeline processing failure. Missing trace pointer targets indicators.");
+        alert("Error: Report setup tracking failed due to missing record traces index points.");
         return;
     }
 
@@ -418,51 +619,61 @@ function generateDeviceReportPDF(targetId) {
 
     setTimeout(() => {
         let originalTitle = document.title;
-        document.title = "Microplastic_Report_" + matchedRecord.materialName.replace(/\s+/g, "_");
-
+        document.title = "Lab_Sensor_Report_" + matchedRecord.materialName.replace(/\s+/g, "_");
         window.print();
-
         document.title = originalTitle;
-    }, 450);
+    }, 500);
 }
 
 function shareMaterialDataset(targetId) {
-    let matchedRecord = storedDatabase.find(record => record.uniqueId === targetId);
+    let matchedRecord = null;
+    for (let i = 0; i < storedDatabase.length; i++) {
+        if (storedDatabase[i].uniqueId === targetId) {
+            matchedRecord = storedDatabase[i];
+            break;
+        }
+    }
     if(!matchedRecord) {
-        alert("Record not found.");
+        alert("Record extraction error.");
         return;
     }
     
-    let shareText = `🔬 *Microplastic Analysis Project Report* 🔬\n\n` +
-                    `🔹 *Material Source:* ${matchedRecord.materialName}\n` +
-                    `🔹 *Total Samples Logged:* ${matchedRecord.samplesSize}\n` +
-                    `🔹 *Average Raw Score Index:* ${matchedRecord.avgScoreValue}\n` +
-                    `🔹 *Final Health Safety Verdict:* ${matchedRecord.finalStatusVerdict.toUpperCase()}\n\n` +
-                    `📊 _Generated via Optical Microplastic Detection Simulation System Dashboard._`;
+    let shareText = `🔬 *Microplastic System Analysis Record Snapshot* 🔬\n\n` +
+                    `🔹 *Medium Allocation:* ${matchedRecord.materialName}\n` +
+                    `🔹 *Evaluated Data Points:* ${matchedRecord.samplesSize} Sequences\n` +
+                    `🔹 *Mean Calibration Metric:* ${matchedRecord.avgScoreValue} Raw Units\n` +
+                    `🔹 *Safety Verdict Outcome:* ${matchedRecord.finalStatusVerdict.toUpperCase()}\n\n` +
+                    `📊 _Simulated via Core Photodiode Refraction Laboratory Application Node Module._`;
 
     if (navigator.share) {
         navigator.share({
-            title: 'Microplastic Detection Project Report',
+            title: 'Optical Microplastic Laboratory Analytics Node',
             text: shareText,
             url: window.location.href
         })
-        .then(() => alert("Shared successfully via native share drawer!"))
+        .then(() => alert("Broadcast complete. Stream synchronized across system drawers."))
         .catch((error) => {
             navigator.clipboard.writeText(shareText);
-            alert("Share panel closed. Report summary copied to clipboard as backup!");
+            alert("System Drawer Cancelled: Report compiled to system buffer clipboard structures instead.");
         });
     } else {
         navigator.clipboard.writeText(shareText).then(() => {
-            alert("Native system sharing is not supported on this browser context. Summary text automatically copied to your clipboard logs instead!");
+            alert("Clipboard Sync: Native sharing context layout unsupported on this runtime container. Raw metrics string exported to system copy layers.");
         });
     }
 }
 
 function deleteStoredMaterialDataset(targetId) {
-    if (confirm("Are you sure you want to delete this material report entry from permanent storage?")) {
-        storedDatabase = storedDatabase.filter(record => record.uniqueId !== targetId);
+    if (confirm("Are you sure you want to delete this material record trace permanently from memory cache?")) {
+        let temporaryRegistry = [];
+        for (let i = 0; i < storedDatabase.length; i++) {
+            if (storedDatabase[i].uniqueId !== targetId) {
+                temporaryRegistry.push(storedDatabase[i]);
+            }
+        }
+        storedDatabase = temporaryRegistry;
         saveToLocalStorage();
         refreshDatabaseHistoryTableLogs();
-        alert("Record deleted successfully!");
+        alert("Purge Complete: Row deleted successfully from the project log list.");
     }
 }
