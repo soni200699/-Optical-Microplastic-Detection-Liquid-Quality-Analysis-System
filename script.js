@@ -243,12 +243,26 @@ function addSampleData() {
     let transmission = Number(transmissionInput);
     let turbidity = Number(turbidityInput);
 
-    if(scatter < 0 || transmission < 0 || turbidity < 0) {
-        alert("Error: Sensor input reading metrics cannot possess negative numbers values.");
+    if(scatter < 0 || scatter > 500) {
+        alert("Error: Scatter reading must be between 0 and 500 lx.");
         return;
     }
 
-    let calculatedScore = (scatter * 0.6) + (transmission * 0.3) + (turbidity * 0.1);
+    if(transmission < 0 || transmission > 100) {
+        alert("Error: Transmission percentage must be between 0 and 100 %.");
+        return;
+    }
+
+    if(turbidity < 0 || turbidity > 1000) {
+        alert("Error: Turbidity reading must be between 0 and 1000 NTU.");
+        return;
+    }
+
+    let normScatter = (scatter / 5) * 0.6;
+    let normTransmission = transmission * 0.3;
+    let normTurbidity = (turbidity / 10) * 0.1;
+    let calculatedScore = normScatter + normTransmission + normTurbidity;
+
     let statusClassification = "";
     let interpretationTip = "";
 
@@ -311,9 +325,9 @@ function updateUserInterfaceLogs() {
         let cls = sample.status === "Safe" ? "status-safe" : (sample.status === "Moderate" ? "status-moderate" : "status-danger");
         tr.innerHTML = `<td>${sample.sampleIndex}</td>
                         <td><strong>${sample.liquidName}</strong></td>
-                        <td>${sample.scatterValue.toFixed(1)}</td>
-                        <td>${sample.transmissionValue.toFixed(1)}</td>
-                        <td>${sample.turbidityValue.toFixed(1)}</td>
+                        <td>${sample.scatterValue.toFixed(1)} lx</td>
+                        <td>${sample.transmissionValue.toFixed(1)} %</td>
+                        <td>${sample.turbidityValue.toFixed(1)} NTU</td>
                         <td>${sample.finalScore.toFixed(2)}</td>
                         <td class="${cls}">${sample.status}</td>
                         <td style="font-size: 0.85rem; text-align: left; color: #475569;">${sample.tip}</td>`;
@@ -347,7 +361,8 @@ function renderAnalyticalCharts(safeTicks, moderateTicks, dangerTicks) {
     let pieCanvas = document.getElementById("pieChart");
     if(!barCanvas || !pieCanvas) return;
 
-    let chartLabels = [], chartDataScores = [], chartColorsBar = [];
+    let chartLabels = [], chartDataScores = [];
+    let chartColorsBar = [];
     for (let i = 0; i < currentSamples.length; i++) {
         chartLabels.push("Sample " + currentSamples[i].sampleIndex);
         chartDataScores.push(currentSamples[i].finalScore);
@@ -471,7 +486,7 @@ function generateDeviceReportPDF(targetId) {
     updateUserInterfaceLogs();
     setTimeout(() => {
         let originalTitle = document.title;
-        document.title = "Project_Sensor_Report_" + matchedRecord.materialName.replace(/\s+/g, "_");
+        document.title = "Project_Report_" + matchedRecord.materialName.replace(/\s+/g, "_");
         window.print(); document.title = originalTitle;
     }, 500);
 }
